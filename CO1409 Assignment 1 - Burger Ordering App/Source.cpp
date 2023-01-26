@@ -38,9 +38,11 @@ int ShowMenu(double &balance);
 void AddCredits(double &balance);
 void ShowBurgerSizes(double &balance);
 void SelectBurgerSize(double &balance);
-void ShowToppings(double &price, string &burgerSize);
-void SelectToppings(double &balance);
-void Checkout(double &balance);
+void ShowToppings();
+void SelectToppings(double &balance, double &price);
+int Checkout(double &balance, double &price, vector<string> selectedToppings);
+void SaveOrder();
+void LoadOrders();
 
 
 int main()
@@ -132,7 +134,7 @@ void SelectBurgerSize(double &balance)
 	string burgerSize;
 	double price{};
 	int choice;
-	while (!(cin >> choice) || choice < 0 || choice > 3)
+	while (!(cin >> choice) || choice < 0 || choice > 3) // initially learnt from https://stackoverflow.com/a/62018676
 	{
 		ClearInputBuffer();
 		cout << "Sorry, please select a valid option from the menu" << '\n';
@@ -146,19 +148,19 @@ void SelectBurgerSize(double &balance)
 		burgerSize = "Small";
 		price += 3.0;
 		cout << "You selected a " << burgerSize << " burger." << '\n';
-		SelectToppings(balance);
+		SelectToppings(balance, price);
 		break;
 	case 2:
 		burgerSize = "Medium";
 		price += 5.5;
 		cout << "You selected a " << burgerSize << " burger." << '\n';
-		SelectToppings(balance);
+		SelectToppings(balance, price);
 		break;
 	case 3:
 		burgerSize = "Large";
 		price += 7.25;
 		cout << "You selected a " << burgerSize << " burger." << '\n';
-		SelectToppings(balance);
+		SelectToppings(balance, price);
 		break;
 	default:
 		cout << "Invalid selection. Please enter a number listed from the menu" << '\n';
@@ -180,7 +182,7 @@ void ShowToppings()
 	cout << "Please enter a number: ";
 }
 
-void SelectToppings(double &balance)
+void SelectToppings(double &balance, double &price)
 {
 	vector<string> selectedToppings;
 	ShowToppings();
@@ -196,9 +198,11 @@ void SelectToppings(double &balance)
 		case 1: case 2: case 3: case 4: case 5: case 6:
 			selectedToppings.push_back(toppings[choice - 1].name); // Select topping from array using user input - 1 
 			cout << "You've added " << toppings[choice - 1].name << " to your order.\n";
+			price += toppings[choice - 1].price;
+			cout << "Current total price is: " << price << '\n';
 			break;
 		case 7:
-			Checkout(balance);
+			Checkout(balance, price, selectedToppings);
 			break;
 		default:
 			cout << "Invalid selection. Please enter a number listed from the menu" << '\n';
@@ -208,7 +212,40 @@ void SelectToppings(double &balance)
 	} while (choice != 7);
 }
 
-void Checkout(double &balance)
+int Checkout(double &balance, double &price, vector<string> selectedToppings)
 {
-	cout << "Test from checkout function" << '\n';
+	cout << "-------------------------------\n";
+	cout << "Available credits:" << balance << '\n';
+	cout << "Burger price:" << price << '\n';
+	cout << "-------------------------------\n";
+
+	balance -= price; // deduct price from balance if enough credits
+	cout << "New balance: " << balance << '\n';
+	SaveOrder();
+	cout << "...............................\n";
+	cout << "Would you like to purchase another burger?" << '\n';
+	char response{};
+	while (!(cin >> response) || tolower(response) != 'y' || tolower(response) != 'n')
+	{
+		ClearInputBuffer();
+		cout << "Sorry, that input is invalid" << '\n';
+	}
+	if (tolower(response == 'y'))
+	{
+		ShowMenu(balance);
+	}
+	else if (tolower(response == 'n'))
+	{
+		return 0;
+	}
+}
+
+void SaveOrder()
+{
+	cout << "Saving..." << '\n';
+}
+
+void LoadOrders()
+{
+
 }
