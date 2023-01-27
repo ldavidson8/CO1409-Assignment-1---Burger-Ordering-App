@@ -1,19 +1,9 @@
 // Lewis Davidson 20703319
 
-// Ask user for the balance
-
-// Select size of the burger
-
-// Select multiple toppings
-
-// Add extra credits
-
-// extra : Recent Orders
-
-#include "pch.h"
+#include "pch.h" // Precompiled header
 using namespace std;
 
-const double MINIMUM_BALANCE = 3.00;
+const double MINIMUM_BALANCE = 3.00; // Balance required to start an order
 
 const int NUM_TOPPINGS = 6;
 
@@ -22,7 +12,7 @@ struct Topping {
 	double price;
 };
 
-// Structure of the available toppings
+// Array of the struct for toppings
 const Topping toppings[NUM_TOPPINGS] = {
 	{"Cheese", 0.8},
 	{"Salad", 0.5},
@@ -34,15 +24,20 @@ const Topping toppings[NUM_TOPPINGS] = {
 
 
 // Function Declarations
-int ShowMenu(double &balance);
-void AddCredits(double &balance);
-void ShowBurgerSizes(double &balance);
-void SelectBurgerSize(double &balance);
-void ShowToppings();
-void SelectToppings(double &balance, double &price);
-int Checkout(double &balance, double &price, vector<string> selectedToppings);
-void SaveOrder();
-void LoadOrders();
+int ShowMenu(double& balance); // Show the main menu for adding credits, ordering or exiting program
+void AddCredits(double& balance); // Input menu for adding credits to their balance.
+void ShowBurgerSizes(double& balance); // Menu for outputting the burger size options
+void SelectBurgerSize(double& balance); // Input menu for the user to select the burger size
+void ShowToppings(); // Menu for outputting the available toppings 
+
+// Input menu for user to select toppings
+void SelectToppings(string& burgerSize, double& balance, double& price); 
+
+// Checkout for price deduction from balance and allowing reorders
+int Checkout(string& burgerSize, double& balance, double& price, vector<string> selectedToppings); 
+
+// Save each order on their own line to a file "orders.txt"
+void SaveOrder(const string& burgerSize, const vector<string> selectedToppings, const int& price); 
 
 
 int main()
@@ -63,7 +58,7 @@ void ClearInputBuffer()
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-int ShowMenu(double &balance)
+int ShowMenu(double& balance)
 {
 	cout << "MAIN MENU" << '\n';
 	cout << " 1. Add Credits [Current balance: " << fixed << setprecision(2) << balance << "]" << '\n';
@@ -100,7 +95,7 @@ int ShowMenu(double &balance)
 	}
 }
 
-void AddCredits(double &balance)
+void AddCredits(double& balance)
 {
 	system("cls");
 	double addCreditAmount;
@@ -115,7 +110,7 @@ void AddCredits(double &balance)
 	ShowMenu(balance);
 }
 
-void ShowBurgerSizes(double &balance)
+void ShowBurgerSizes(double& balance)
 {
 	cout << "ORDER BURGER - Select Size\t [Current balance: " << fixed << setprecision(2) << balance << " credits]" << '\n';
 	cout << "Please choose from the following options:" << '\n';
@@ -127,14 +122,14 @@ void ShowBurgerSizes(double &balance)
 	cout << "Please select a burger size: ";
 }
 
-void SelectBurgerSize(double &balance)
+void SelectBurgerSize(double& balance)
 {
 	system("cls");
 	ShowBurgerSizes(balance);
 	string burgerSize;
 	double price{};
 	int choice;
-	while (!(cin >> choice) || choice < 0 || choice > 3) // initially learnt from https://stackoverflow.com/a/62018676
+	while (!(cin >> choice) || choice < 0 || choice > 3) // https://stackoverflow.com/a/62018676
 	{
 		ClearInputBuffer();
 		cout << "Sorry, please select a valid option from the menu" << '\n';
@@ -148,19 +143,19 @@ void SelectBurgerSize(double &balance)
 		burgerSize = "Small";
 		price += 3.0;
 		cout << "You selected a " << burgerSize << " burger." << '\n';
-		SelectToppings(balance, price);
+		SelectToppings(burgerSize, balance, price);
 		break;
 	case 2:
 		burgerSize = "Medium";
 		price += 5.5;
 		cout << "You selected a " << burgerSize << " burger." << '\n';
-		SelectToppings(balance, price);
+		SelectToppings(burgerSize, balance, price);
 		break;
 	case 3:
 		burgerSize = "Large";
 		price += 7.25;
 		cout << "You selected a " << burgerSize << " burger." << '\n';
-		SelectToppings(balance, price);
+		SelectToppings(burgerSize, balance, price);
 		break;
 	default:
 		cout << "Invalid selection. Please enter a number listed from the menu" << '\n';
@@ -172,17 +167,16 @@ void SelectBurgerSize(double &balance)
 void ShowToppings()
 {
 	cout << "Select your toppings:" << '\n';
-
-	for (int i = 0; i < NUM_TOPPINGS; i++)
+	cout << "Topping" << '\t' << "Price" << '\n';
+	for (int i = 0; i < NUM_TOPPINGS; i++) // Standard for loop for indexing on menu
 	{
-
 		cout << i + 1 << ". " << toppings[i].name << '\t' << toppings[i].price << '\n';
 	}
 	cout << "7. Checkout" << '\n';
 	cout << "Please enter a number: ";
 }
 
-void SelectToppings(double &balance, double &price)
+void SelectToppings(string& burgerSize, double& balance, double& price)
 {
 	vector<string> selectedToppings;
 	ShowToppings();
@@ -196,13 +190,13 @@ void SelectToppings(double &balance, double &price)
 		switch (choice)
 		{
 		case 1: case 2: case 3: case 4: case 5: case 6:
-			selectedToppings.push_back(toppings[choice - 1].name); // Select topping from array using user input - 1 
+			selectedToppings.push_back(toppings[choice - 1].name); // Select topping from array using user input - 1 and add to the end of the vector 
 			cout << "You've added " << toppings[choice - 1].name << " to your order.\n";
 			price += toppings[choice - 1].price;
 			cout << "Current total price is: " << price << '\n';
 			break;
 		case 7:
-			Checkout(balance, price, selectedToppings);
+			Checkout(burgerSize, balance, price, selectedToppings);
 			break;
 		default:
 			cout << "Invalid selection. Please enter a number listed from the menu" << '\n';
@@ -212,7 +206,7 @@ void SelectToppings(double &balance, double &price)
 	} while (choice != 7);
 }
 
-int Checkout(double &balance, double &price, vector<string> selectedToppings)
+int Checkout(string& burgerSize, double& balance, double& price, vector<string> selectedToppings)
 {
 	cout << "-------------------------------\n";
 	cout << "Available credits:" << balance << '\n';
@@ -221,11 +215,11 @@ int Checkout(double &balance, double &price, vector<string> selectedToppings)
 
 	balance -= price; // deduct price from balance if enough credits
 	cout << "New balance: " << balance << '\n';
-	SaveOrder();
+	SaveOrder(burgerSize, selectedToppings, price);
 	cout << "...............................\n";
 	cout << "Would you like to purchase another burger?" << '\n';
 	char response{};
-	while (!(cin >> response) || tolower(response) != 'y' || tolower(response) != 'n')
+	while (!(cin >> response) || (tolower(response) != 'y' && tolower(response) != 'n'))
 	{
 		ClearInputBuffer();
 		cout << "Sorry, that input is invalid" << '\n';
@@ -236,16 +230,19 @@ int Checkout(double &balance, double &price, vector<string> selectedToppings)
 	}
 	else if (tolower(response == 'n'))
 	{
+		cout << "Thanks for ordering from UCLan Burgers :)" << '\n';
 		return 0;
 	}
 }
 
-void SaveOrder()
+void SaveOrder(const string& burgerSize, const vector<string> selectedToppings, const int& price)
 {
-	cout << "Saving..." << '\n';
-}
-
-void LoadOrders()
-{
-
+	ofstream file("orders.txt", ios::app);
+	file << burgerSize << ",";
+	for (auto& topping : selectedToppings) // C++ documentation on for range loop
+	{
+		file << topping << ",";
+	}
+	file << price << "\n"; // Outputs new line so each order saved is on separate line
+	file.close();
 }
